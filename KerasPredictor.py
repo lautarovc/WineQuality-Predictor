@@ -77,7 +77,7 @@ model.add(Dense(1))
 
 adam = Adam(lr=0.01)
 
-model.compile(loss='mean_absolute_error', optimizer=adam)
+model.compile(loss='mean_absolute_percentage_error', optimizer=adam)
 
 # Fit the model
 
