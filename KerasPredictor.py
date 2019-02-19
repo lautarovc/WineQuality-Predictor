@@ -11,18 +11,25 @@ import matplotlib.pyplot as plt
 from numpy.random import seed
 from tensorflow import set_random_seed
 
+# Usage
+
 def printUsage():
 	print("Usage: KerasPredictor.py white|red")
 	sys.exit(2)
 
 try:
 	wine = sys.argv[1]
+	if wine != "red" and wine != "white":
+		printUsage()
 except:
 	printUsage()
 
 # Load data
 
 df = pd.read_csv("Data/winequality-"+wine+".csv", sep=";")
+
+# Preprocessing should go here
+
 
 # Divide data in training and testing
 
@@ -32,6 +39,7 @@ dfTrain, dfTest = train_test_split(df, test_size=0.2, shuffle=False)
 
 X = np.array(dfTrain.ix[:,:11])
 Y = np.array(dfTrain.ix[:,11])
+
 
 xTest = np.array(dfTest.ix[:,:11])
 yTest = np.array(dfTest.ix[:,11])
@@ -44,21 +52,27 @@ scaledX = scaler1.fit_transform(X)
 scaler2 = MinMaxScaler()
 scaledTest = scaler2.fit_transform(xTest)
 
-# More Preprocessing should go here
 
 # Define seed
 
 seed(1)
 set_random_seed(1)
 
+
 # Define and compile model
 
 model = Sequential()
-model.add(Dense(9, input_dim=11,  activation="relu"))
-model.add(Dense(8, activation="relu"))
-model.add(Dense(5, activation="relu"))
-model.add(Dense(8, activation="relu"))
-model.add(Dense(11, activation="relu"))
+
+if wine=="white":
+	model.add(Dense(11, input_dim=11,  activation="relu"))
+	model.add(Dense(15, activation="relu"))
+	model.add(Dense(8, activation="relu"))
+
+else:
+	model.add(Dense(10, input_dim=11,  activation="relu"))
+	model.add(Dense(8, activation="relu"))
+
+
 model.add(Dense(1))
 
 adam = Adam(lr=0.01)
@@ -67,7 +81,7 @@ model.compile(loss='mean_absolute_error', optimizer=adam)
 
 # Fit the model
 
-model.fit(scaledX, Y, batch_size=scaledX.shape[0], epochs=500, validation_data=(scaledTest, yTest))
+model.fit(scaledX, Y, batch_size=scaledX.shape[0], epochs=410, validation_data=(scaledTest, yTest))
 
 trainPrediction = model.predict(scaledX)
 testPrediction = model.predict(scaledTest)
