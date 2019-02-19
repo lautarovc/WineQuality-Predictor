@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd 
 from sklearn.model_selection import train_test_split
@@ -7,12 +8,25 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 import matplotlib.pyplot as plt
 
+from numpy.random import seed
+from tensorflow import set_random_seed
 
-df = pd.read_csv("Data/winequality-white.csv", sep=";")
+def printUsage():
+	print("Usage: KerasPredictor.py white|red")
+	sys.exit(2)
+
+try:
+	wine = sys.argv[1]
+except:
+	printUsage()
+
+# Load data
+
+df = pd.read_csv("Data/winequality-"+wine+".csv", sep=";")
 
 # Divide data in training and testing
 
-dfTrain, dfTest = train_test_split(df, test_size=0.2)
+dfTrain, dfTest = train_test_split(df, test_size=0.2, shuffle=False)
 
 # Divide target from data
 
@@ -33,18 +47,23 @@ scaledTest = scaler2.fit_transform(xTest)
 # More Preprocessing should go here
 
 # Define seed
-seed = 3
-np.random.seed(seed)
+
+seed(1)
+set_random_seed(1)
 
 # Define and compile model
 
 model = Sequential()
-model.add(Dense(11, input_dim=11, kernel_initializer="normal", activation="relu"))
-model.add(Dense(1, kernel_initializer="normal"))
+model.add(Dense(9, input_dim=11,  activation="relu"))
+model.add(Dense(8, activation="relu"))
+model.add(Dense(5, activation="relu"))
+model.add(Dense(8, activation="relu"))
+model.add(Dense(11, activation="relu"))
+model.add(Dense(1))
 
 adam = Adam(lr=0.01)
 
-model.compile(loss='mean_absolute_percentage_error', optimizer=adam)
+model.compile(loss='mean_absolute_error', optimizer=adam)
 
 # Fit the model
 
@@ -53,7 +72,7 @@ model.fit(scaledX, Y, batch_size=scaledX.shape[0], epochs=500, validation_data=(
 trainPrediction = model.predict(scaledX)
 testPrediction = model.predict(scaledTest)
 
-f = open('results.txt', 'w')
+f = open('results-'+wine+'.txt', 'w')
 
 for i in range(len(yTest)):
 	f.write(str(int(round(testPrediction[i][0])))+" "+str(yTest[i])+"\n")
